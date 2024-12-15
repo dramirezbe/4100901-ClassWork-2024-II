@@ -1,18 +1,10 @@
 #include "systick.h"
 
-typedef struct {
-    volatile uint32_t CTRL;
-    volatile uint32_t LOAD;
-    volatile uint32_t VAL;
-    volatile uint32_t CALIB;
-
-} SysTick_t;
-
-
 #define SysTick ((SysTick_t *)0xE000E010) // Base address of SysTick
 
 
-volatile uint32_t ms_counter = 0; // Counter for milliseconds
+volatile uint32_t ms_counter_a = 0; // Counter for milliseconds (A)
+volatile uint32_t ms_counter_b = 0; // Counter for milliseconds (B)
 
 
 void configure_systick_and_start(void)
@@ -22,17 +14,35 @@ void configure_systick_and_start(void)
     SysTick->CTRL = 0x7;     // Enable SysTick, processor clock, no interrupt
 }
 
-uint32_t systick_GetTick(void)
+uint32_t systick_GetTick(Counter_t counter)
 {
-    return ms_counter;
+    switch (counter) {
+        case COUNTER_A:
+            return ms_counter_a;
+        case COUNTER_B:
+            return ms_counter_b;
+        default:
+            return 0; // Default case if an invalid counter is used
+    }
 }
 
-void systick_reset(void)
+void systick_reset(Counter_t counter)
 {
-    ms_counter = 0;
+    switch (counter) {
+        case COUNTER_A:
+            ms_counter_a = 0;
+            break;
+        case COUNTER_B:
+            ms_counter_b = 0;
+            break;
+        default:
+            // Invalid counter; do nothing
+            break;
+    }
 }
 
 void SysTick_Handler(void)
 {
-    ms_counter++;
+    ms_counter_a++; // Increment counter A
+    ms_counter_b++; // Increment counter B
 }
